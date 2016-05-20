@@ -7,7 +7,7 @@ var onRun = function(context) {
                                  defaultButton:"OK"
                                alternateButton:"Cancel"
                                    otherButton:nil
-                     informativeTextWithFormat:"ScreenTaco is a product developed by Luca Cardelli & Alessio Cardelli in exclusive for Usabitaly. \nUsabita.ly \n\nFor help & Support write on github. \n\nLikn GIT \n\nScreenTaco v1.0"];
+                     informativeTextWithFormat:"ScreenTaco is a product developed by Luca Cardelli & Alessio Cardelli in exclusive for Usabitaly. \nUsabita.ly \n\nFor help & Support write on github. \n\nhttps://github.com/LucaCardelli/ScreenTaco/ \n\nScreenTaco v1.0"];
     [alert setIcon:image];
 
   	[alert runModal];
