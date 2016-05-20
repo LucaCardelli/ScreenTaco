@@ -1,12 +1,14 @@
 var onRun = function(context) {
 	var path = context.scriptPath.substring(0, context.scriptPath.lastIndexOf('/') - 6)
-	imagesPath = path+"Resources/screentaco-logo.png";
-	log(imagesPath)
+	imagePath = path+"Resources/screentaco-logo.png";
+	var image = [[NSImage alloc] initWithContentsOfFile:imagePath];
+
 	var alert = [NSAlert alertWithMessageText: "Help & About"
                                  defaultButton:"OK"
                                alternateButton:"Cancel"
                                    otherButton:nil
                      informativeTextWithFormat:"ScreenTaco is a product developed by Luca Cardelli & Alessio Cardelli in exclusive for Usabitaly. \nUsabita.ly \n\nFor help & Support write on github. \n\nLikn GIT \n\nScreenTaco v1.0"];
+    [alert setIcon:image];
 
   	[alert runModal];
  };

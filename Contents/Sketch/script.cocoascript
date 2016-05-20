@@ -1,19 +1,22 @@
 var onRun = function(context) {
   var selectedLayers = context.selection;
 var selectedCount = selectedLayers.count();
-
+var doc = context.document
 var name = "ScreenTaco_Canvas";
 
 
 if (selectedCount == 0) {
-
+    [doc showMessage:"No artboard selected!"];
 } else {
+	var path = context.scriptPath.substring(0, context.scriptPath.lastIndexOf('/') - 6)
+	imagePath = path+"Resources/screentaco-logo.png";
+	var image = [[NSImage alloc] initWithContentsOfFile:imagePath];
 	var alert = [NSAlert alertWithMessageText: "Choose size and device:"
                                  defaultButton:"OK"
                                alternateButton:"Cancel"
                                    otherButton:nil
                      informativeTextWithFormat:""];
-
+                     [alert setIcon:image];
 	var input = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
 	[input addItemWithTitle:'Iphone Dark - Wireframe']
 	[input addItemWithTitle:'Iphone Light - Wireframe']
