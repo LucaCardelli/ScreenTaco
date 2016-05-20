@@ -1,0 +1,32 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "cmd shift w",
+      "name" : "Wrap Selected Artboards",
+      "identifier" : "screentaco"
+    },
+    {
+      "script" : "about.cocoascript",
+      "handler" : "onRun",
+      "shortcut" : "",
+      "name" : "Help & About",
+      "identifier" : "about"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "screentaco",
+      "-",
+      "about"
+    ],
+    "title" : "🌮 ScreenTaco"
+  },
+  "identifier" : "com.example.sketch.af408f3e-46fb-4d5c-ac4b-351704451213",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "🌮 ScreenTaco"
+}

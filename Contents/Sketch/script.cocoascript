@@ -1,0 +1,452 @@
+var onRun = function(context) {
+  var selectedLayers = context.selection;
+var selectedCount = selectedLayers.count();
+
+var name = "ScreenTaco_Canvas";
+
+
+if (selectedCount == 0) {
+
+} else {
+	var alert = [NSAlert alertWithMessageText: "Choose size and device:"
+                                 defaultButton:"OK"
+                               alternateButton:"Cancel"
+                                   otherButton:nil
+                     informativeTextWithFormat:""];
+
+	var input = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 24)];
+	[input addItemWithTitle:'Iphone Dark - Wireframe']
+	[input addItemWithTitle:'Iphone Light - Wireframe']
+	[input addItemWithTitle:'Samsung Dark - Wireframe']
+	[input addItemWithTitle:'Samsung Light - Wireframe']
+	[input addItemWithTitle:'Lumia Dark - Wireframe']
+	[input addItemWithTitle:'Lumia Light - Wireframe']
+
+	var container = [[NSBox alloc] initWithFrame:NSMakeRect(0, 0, 0, 0)];
+	[container setBorderType:NSNoBorder];
+	[container setTransparent:true];
+	[container setTitle:""];
+  	
+
+	var inputd = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(0, 30, 200, 24)];
+	[inputd addItemWithTitle:'Design x1 - hdpi']
+	[inputd addItemWithTitle:'Design x2 - xhdpi']
+	[inputd addItemWithTitle:'Design x3 - xxhdpi']
+
+	[container addSubview:inputd];
+	[container addSubview:input];
+
+	[container sizeToFit]
+
+  	[alert setAccessoryView:container];
+	var clicked = [alert runModal];
+
+	if (clicked == NSFileHandlingPanelOKButton) {
+		var type = [input titleOfSelectedItem]
+		var imageData = "iphone_black";
+		var size = 1;
+		var name = "ScreenTaco_Canvas "+type;
+		if ( type == "Iphone Dark - Wireframe") imageData = "iphone_black";
+		if ( type == "Iphone Light - Wireframe") imageData = "iphone_white";
+		if ( type == "Samsung Dark - Wireframe") imageData = "samsung_black";
+		if ( type == "Samsung Light - Wireframe") imageData = "samsung_white";
+		if ( type == "Lumia Dark - Wireframe") imageData = "lumia_black";
+		if ( type == "Lumia Light - Wireframe") imageData = "lumia_white";
+
+		var sizetype = [inputd titleOfSelectedItem]
+		if ( sizetype == "Design x1 - hdpi" ) size = 1;
+		if ( sizetype == "Design x2 - xhdpi" ) size = 2;
+		if ( sizetype == "Design x3 - xxhdpi" ) size = 3;
+		var larghezza = 135*size;
+		var padding = larghezza*2;
+	  	resetLayer();
+	  	var par = creaBgLayer(selectedLayers);
+		var images = loadImages(imageData);
+	  	for ( var i = 0; i < selectedCount; i++ ) {
+			creaBgLayerSingolo(selectedLayers[i], par, images);
+	  	}
+  	}
+};
+
+/** RESETTA ARTBOARD **/
+
+function resetLayer() {
+	var all_layers = context.document.currentPage().layers();
+	for ( var i = 0; i < all_layers.count(); i++ ) {
+		var layer = all_layers.objectAtIndex(i);
+		if ( layer.name() == name ) {
+			context.document.currentPage().removeLayer(layer);
+		}
+	}
+}
+
+/** CREA ARTBOARD PER CONTENERE GRUPPO **/
+
+function creaBgLayer(layers) {
+  var color   = [MSColor colorWithRed:0.5 green:0.1 blue:0.1 alpha:1.0];
+  var maxX = -9999;
+  var minX = 9999;
+  var maxY = -9999;
+  var minY = 9999;
+  var count = layers.count();
+  for (var i = 0; i < count; i++) {
+    var layer = layers[i];
+    var x = layer.frame().x();
+	var y = layer.frame().y();
+    var w = layer.frame().width();
+    var h = layer.frame().height();
+	if ( x < minX ) minX = x;
+	if ( x + w > maxX ) maxX = x + w;
+	if ( y < minY ) minY = y;
+	if ( y + h > maxY ) maxY = y + h;
+  }
+  var w = maxX-minX+(padding*2);
+  var h = maxY-minY+(padding*2);
+  var lay = MSLayerGroup.new();
+  //var lay = MSArtboardGroup.new();
+  lay.frame().setConstrainProportions(false);
+  lay.setName(name);
+  lay.absoluteRect().setRulerX(minX-padding);
+  lay.absoluteRect().setRulerY(minY-padding);
+  lay.frame().width = w;
+  lay.frame().height = h; 
+  lay.setIsLocked(true);
+  var fill = layer.style().addStylePartOfType(0);
+  layer.style().fills().firstObject().setFillType(0); 
+  //fill.color = color;
+  
+
+  context.document.currentPage().addLayers([lay]);
+  return lay;
+}
+
+function creaBgLayerSingolo(layer, parent, images) {
+	var group = creaSingoloGruppo(layer, parent);
+	creaDevice(group, layer, images);
+}
+
+
+/** CREA I LAYER PER  IL TELEFONO **/
+
+function creaDevice(group, artboard, images) {		
+	creaAngoli(group, artboard, images);	
+	creaLatoSopra(group, artboard, images);
+	creaLatoSotto(group, artboard, images);
+	creaLatoDestro(group, artboard, images);
+	creaLatoSinistro(group, artboard, images);
+}
+
+function creaLatoSopra(group, artboard, images) {
+	// SOPRA
+	var centrale = 96*size;
+	var width = artboard.frame().width();
+	
+	//Creo centrale	
+	pos = ( width - centrale ) / 2;
+	creaRect(group, "Sopra Centrale", group.frame().x()+pos+larghezza, group.frame().y(), centrale, larghezza, images[32]);
+	creaRect(group, "Sopra Lato Sx", group.frame().x()+larghezza, group.frame().y(), 117*size, larghezza, images[35]);	
+	creaRect(group, "Sopra Lato Dx", group.frame().x()+artboard.frame().width()+larghezza-(117*size), group.frame().y(), 117*size, larghezza, images[33]);	
+	var rim = width - centrale;
+	var rims = rim/2;
+	//Parte sinistra
+	creaLatoOrizzontaleSopra(group, "Lato Sopra Sinistro", 117*size, rims, group.frame().y());
+	//Parte destra
+	creaLatoOrizzontaleSopra(group, "Lato Sopra Destro", rims+centrale, artboard.frame().width()-(117*size), group.frame().y());
+}
+
+function creaLatoSotto(group, artboard, images) {
+	// SOPRA
+	var centrale = 96*size;
+	var width = artboard.frame().width();
+	
+	//Creo centrale	
+	pos = ( width - centrale ) / 2;
+	creaRect(group, "Sotto Centrale", group.frame().x()+pos+larghezza, group.frame().y()+larghezza+artboard.frame().height(), centrale, larghezza, images[37]);
+	creaRect(group, "Sotto Lato Sx", group.frame().x()+larghezza, group.frame().y()+larghezza+artboard.frame().height(), 117*size, larghezza, images[40]);	
+	creaRect(group, "Sotto Lato Dx", group.frame().x()+artboard.frame().width()+larghezza-(117*size), group.frame().y()+larghezza+artboard.frame().height(), 117*size, larghezza, images[38]);	
+
+	var rim = width - centrale;
+	var rims = rim/2;
+	//Parte sinistra
+	creaLatoOrizzontaleSotto(group, "Lato Sotto Sinistro", 117*size, rims, group.frame().y()+larghezza+artboard.frame().height());
+	//Parte destra
+	creaLatoOrizzontaleSotto(group, "Lato Sotto Destro", rims+centrale, artboard.frame().width()-(117*size), group.frame().y()+larghezza+artboard.frame().height());
+}
+
+function creaLatoDestro(group, artboard, images) {
+	creaRect(group, "Lato Dx", group.frame().x()+artboard.frame().width()+larghezza, group.frame().y()+larghezza, larghezza, 175*size, images[5]);		
+	creaLatoVerticaleDestro(group, "Lato Destro", 0, artboard.frame().height(),  group.frame().x()+larghezza+artboard.frame().width() );
+
+}
+function creaLatoSinistro(group, artboard, images) {
+	creaRect(group, "Lato Dx", group.frame().x(), group.frame().y()+larghezza, larghezza, 175*size, images[6]);	
+	creaLatoVerticaleSinistro(group, "Lato Sinistro", 0, artboard.frame().height(),  group.frame().x());
+
+}
+
+/** CREA GLI ANGOLI DEI GRUPPI **/
+function creaAngoli(group, artboard, images) {
+	// Alto SX
+	creaRect(group, "AltoSx", group.frame().x(), group.frame().y(), larghezza, larghezza, images[36]);
+
+	// Alto DX
+	creaRect(group, "AltoDx", group.frame().x()+artboard.frame().width()+larghezza, group.frame().y(), larghezza, larghezza, images[34]);
+
+	// Basso SX
+	creaRect(group, "BassoSx", group.frame().x(), group.frame().y()+artboard.frame().height()+larghezza, larghezza, larghezza, images[41]);
+
+	// Basso DX
+	creaRect(group, "BassoDx", group.frame().x()+artboard.frame().width()+larghezza, group.frame().y()+artboard.frame().height()+larghezza, larghezza, larghezza, images[39]);
+}
+
+function insertImage(layer, image) {	
+	layer.style().addStylePartOfType(0);
+	layer.style().fills().firstObject().setFillType(4); 
+	layer.style().fills().firstObject().setPatternFillType(1);
+	var images = [[MSImageData alloc] initWithImage: image convertColorSpace: false]];
+  	layer.style().fills().firstObject().setImage(images);                                         
+}
+
+/** CREA GRUPPO PER CONTENERE IMMAGINI DEVICE **/
+function creaSingoloGruppo(layer, parent) {
+  	/*var maxX = -9999;
+  	var minX = 9999;
+  	var maxY = -9999;
+  	var minY = 9999;
+  	var parX = parent.frame().x();
+  	var parY = parent.frame().y();
+    var x = layer.frame().x();
+	var y = layer.frame().y();
+    var w = layer.frame().width();
+    var h = layer.frame().height();
+	if ( x < minX ) minX = x;
+	if ( x + w > maxX ) maxX = x + w;
+	if ( y < minY ) minY = y;
+	if ( y + h > maxY ) maxY = y + h;
+  	var w = maxX-minX+(larghezza*2);
+  	var h = maxY-minY+(larghezza*2);
+  	var lay = MSLayerGroup.new();
+  	lay.setName("ScreenTaco_"+layer.name());
+  	lay.absoluteRect().setRulerX(minX-parX-larghezza);
+  	lay.absoluteRect().setRulerY(minY-parY-larghezza);
+  	lay.setIsLocked(true);
+  	lay.frame().width = w;
+  	lay.frame().height = h; 
+  	parent.addLayers([lay])
+	return lay;*/
+
+	var lay = MSLayerGroup.new();
+	lay.setName("ScreenTaco_"+layer.name());
+  	lay.absoluteRect().setRulerX(layer.frame().x()-larghezza);
+  	lay.absoluteRect().setRulerY(layer.frame().y()-larghezza);
+  	lay.setIsLocked(true);
+  	lay.frame().width = layer.frame().width()+(larghezza*2);
+  	lay.frame().height = layer.frame().height()+(larghezza*2); 
+  	parent.addLayers([lay])
+  	return lay;	
+
+}
+
+
+
+/** LOAD IMAGES FROM DIR **/
+
+function loadImages(dataPath){
+	var fileManager = [NSFileManager defaultManager];
+	var scriptPath = context.scriptPath;	
+	var path = context.scriptPath.substring(0, context.scriptPath.lastIndexOf('/') - 6)
+	imagesPath = path+"Resources/"+dataPath;
+	var imagesFileNames = [fileManager contentsOfDirectoryAtPath:imagesPath error:nil];
+	var imageCount = [imagesFileNames count];
+	var selectedPaths = [];
+
+	for ( var i = 0; i < imageCount; i++ ) {
+		var fileName = imagesFileNames[i];
+		var filePath = imagesPath + "/" + fileName;
+		if ( fileName != ".DS_Store" )  {
+			selectedPaths.push(filePath);
+		}
+		
+	}
+	return selectedPaths.map(function(imagePath){
+		
+		if ([fileManager fileExistsAtPath: imagePath]) {
+			var image = [[NSImage alloc] initWithContentsOfFile:imagePath];
+			return image;
+		}
+	})
+}
+
+/** FUNZIONE PER CREARE OGGETTO **/
+
+function creaRect(group, name, rulerx, rulery, width, height, image) {
+	var rect = MSRectangleShape.alloc().init();
+	rect.frame = MSRect.rectWithRect(NSMakeRect(0, 0, width, height));
+
+	var lay = MSShapeGroup.shapeWithPath(rect);
+	group.addLayers([lay]);
+	lay.setName(name);
+	lay.absoluteRect().setRulerX(rulerx);
+	lay.absoluteRect().setRulerY(rulery);
+	lay.frame().width = width;
+	lay.frame().height = height;
+	lay.setIsLocked(true);
+	insertImage(lay, image);
+}
+
+/** FUNZIONE PER CREARE RESTO DEI LATI **/
+
+function creaLatoOrizzontaleSotto(group, lato, start, end, rulery) {
+	var rims = end - start;
+	while ( rims / 500 >= 1 ) {
+		creaRect(group, lato+" 500", group.frame().x()+larghezza+start, rulery, 500, larghezza, images[21]);
+		start = start+500;
+		rims = rims-500;	
+	}
+	while ( rims / 100 >= 1 ) {
+		creaRect(group, lato+" 100", group.frame().x()+larghezza+start, rulery, 100, larghezza, images[1]);
+		start = start+100;
+		rims = rims-100;	
+	}
+	while ( rims / 50 >= 1 ) {
+		creaRect(group, lato+" 50", group.frame().x()+larghezza+start, rulery, 50, larghezza, images[25]);
+		start = start+50;
+		rims = rims-50;	
+	}
+	while ( rims / 25 >= 1 ) {
+		creaRect(group, lato+" 25", group.frame().x()+larghezza+start, rulery, 25, larghezza, images[13]);
+		start = start+25;
+		rims = rims-25;
+	}
+	while ( rims / 10 >= 1 ) {
+		creaRect(group, lato+" 10", group.frame().x()+larghezza+start, rulery, 10, larghezza, images[5]);
+		start = start+10;
+		rims = rims-10;
+	}
+	while ( rims / 5 >= 1 ) {
+		creaRect(group, lato+" 5", group.frame().x()+larghezza+start, rulery, 5, larghezza, images[29]);
+		start = start+5;
+		rims = rims-5;
+	}
+	while ( rims / 1 >= 1 ) {
+		creaRect(group, lato+" 1", group.frame().x()+larghezza+start, rulery, 1, larghezza, images[9]);
+		start = start+1;
+		rims = rims-1;
+	}	
+}
+function creaLatoOrizzontaleSopra(group, lato, start, end, rulery) {
+	var rims = end - start;
+	while ( rims / 500 >= 1 ) {
+		creaRect(group, lato+" 500", group.frame().x()+larghezza+start, rulery, 500, larghezza, images[20]);
+		start = start+500;
+		rims = rims-500;	
+	}
+	while ( rims / 100 >= 1 ) {
+		creaRect(group, lato+" 100", group.frame().x()+larghezza+start, rulery, 100, larghezza, images[0]);
+		start = start+100;
+		rims = rims-100;	
+	}
+	while ( rims / 50 >= 1 ) {
+		creaRect(group, lato+" 50", group.frame().x()+larghezza+start, rulery, 50, larghezza, images[24]);
+		start = start+50;
+		rims = rims-50;	
+	}
+	while ( rims / 25 >= 1 ) {
+		creaRect(group, lato+" 25", group.frame().x()+larghezza+start, rulery, 25, larghezza, images[12]);
+		start = start+25;
+		rims = rims-25;
+	}
+	while ( rims / 10 >= 1 ) {
+		creaRect(group, lato+" 10", group.frame().x()+larghezza+start, rulery, 10, larghezza, images[4]);
+		start = start+10;
+		rims = rims-10;
+	}
+	while ( rims / 5 >= 1 ) {
+		creaRect(group, lato+" 5", group.frame().x()+larghezza+start, rulery, 5, larghezza, images[28]);
+		start = start+5;
+		rims = rims-5;
+	}
+	while ( rims / 1 >= 1 ) {
+		creaRect(group, lato+" 1", group.frame().x()+larghezza+start, rulery, 1, larghezza, images[4]);
+		start = start+1;
+		rims = rims-1;
+	}	
+}
+
+function creaLatoVerticaleDestro(group, lato, start, end, rulerx) {
+	var rims = end - start;
+	while ( rims / 500 >= 1 ) {
+		creaRect(group, lato+" 500", rulerx, group.frame().y()+larghezza+start, larghezza, 500, images[22]);
+		start = start+500;
+		rims = rims-500;	
+	}
+	while ( rims / 100 >= 1 ) {
+		creaRect(group, lato+" 100", rulerx, group.frame().y()+larghezza+start, larghezza, 100, images[2]);
+		start = start+100;
+		rims = rims-100;	
+	}
+	while ( rims / 50 >= 1 ) {
+		creaRect(group, lato+" 50", rulerx, group.frame().y()+larghezza+start, larghezza, 50, images[26]);
+		start = start+50;
+		rims = rims-50;	
+	}
+	while ( rims / 25 >= 1 ) {
+		creaRect(group, lato+" 25", rulerx, group.frame().y()+larghezza+start, larghezza, 25, images[14]);
+		start = start+25;
+		rims = rims-25;
+	}
+	while ( rims / 10 >= 1 ) {
+		creaRect(group, lato+" 10", rulerx, group.frame().y()+larghezza+start, larghezza, 10, images[6]);
+		start = start+10;
+		rims = rims-10;
+	}
+	while ( rims / 5 >= 1 ) {
+		creaRect(group, lato+" 5", rulerx, group.frame().y()+larghezza+start, larghezza, 5, images[30]);
+		start = start+5;
+		rims = rims-5;
+	}
+	while ( rims / 1 >= 1 ) {
+		creaRect(group, lato+" 1", rulerx, group.frame().y()+larghezza+start, larghezza, 1, images[10]);
+		start = start+1;
+		rims = rims-1;
+	}	
+}
+function creaLatoVerticaleSinistro(group, lato, start, end, rulerx) {
+	var rims = end - start;
+	while ( rims / 500 >= 1 ) {
+		creaRect(group, lato+" 500", rulerx, group.frame().y()+larghezza+start, larghezza, 500, images[23]);
+		start = start+500;
+		rims = rims-500;	
+	}
+	while ( rims / 100 >= 1 ) {
+		creaRect(group, lato+" 100", rulerx, group.frame().y()+larghezza+start, larghezza, 100, images[3]);
+		start = start+100;
+		rims = rims-100;	
+	}
+	while ( rims / 50 >= 1 ) {
+		creaRect(group, lato+" 50", rulerx, group.frame().y()+larghezza+start, larghezza, 50, images[27]);
+		start = start+50;
+		rims = rims-50;	
+	}
+	while ( rims / 25 >= 1 ) {
+		creaRect(group, lato+" 25", rulerx, group.frame().y()+larghezza+start, larghezza, 25, images[15]);
+		start = start+25;
+		rims = rims-25;
+	}
+	while ( rims / 10 >= 1 ) {
+		creaRect(group, lato+" 10", rulerx, group.frame().y()+larghezza+start, larghezza, 10, images[7]);
+		start = start+10;
+		rims = rims-10;
+	}
+	while ( rims / 5 >= 1 ) {
+		creaRect(group, lato+" 5", rulerx, group.frame().y()+larghezza+start, larghezza, 5, images[31]);
+		start = start+5;
+		rims = rims-5;
+	}
+	while ( rims / 1 >= 1 ) {
+		creaRect(group, lato+" 1", rulerx, group.frame().y()+larghezza+start, larghezza, 1, images[11]);
+		start = start+1;
+		rims = rims-1;
+	}	
+}
+};
